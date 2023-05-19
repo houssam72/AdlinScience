@@ -1,0 +1,12 @@
+{
+  "name": "adlinscience",
+  "version": "1.0.0",
+  "description": "le Backend de adlin science en nodeJs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "houssam baaloul",
+  "license": "ISC"
+}
