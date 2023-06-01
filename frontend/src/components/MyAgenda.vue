@@ -1,8 +1,8 @@
 <template>
-  <div style="margin-top: 200px">
+  <div>
     <DateModePicker v-model="mode" />
     <VDatePicker
-      v-model.range="range"
+      v-if="modeAgenda == 'date'"
       :mode="mode"
       :rules="rules"
       :attributes="attributes"
@@ -28,20 +28,53 @@
         </div>
       </template>
     </VDatePicker>
-    <div>
-      <button class="myButton">Resrver pour cette date</button>
+    <div v-else style="margin-top: 190px">
+      <VDatePicker
+        v-model.range="range"
+        :mode="mode"
+        :rules="rules"
+        :attributes="attributes"
+      >
+        <template #day-popover="{ dayTitle, attributes }">
+          <div class="px-2" style="padding: 20px 30px">
+            <div
+              class="text-xs text-gray-700 dark:text-gray-300 font-semibold text-center"
+            >
+              {{ dayTitle }}
+            </div>
+            <ul>
+              <li
+                v-for="{ key, customData } in attributes"
+                :key="key"
+                class="block text-xs text-gray-700 dark:text-gray-300 bg-red-100"
+                style="margin-bottom: 20px"
+              >
+                {{ customData.description }}
+                <span class="gg-trash" style="display: inline-block" />
+              </li>
+            </ul>
+          </div>
+        </template>
+      </VDatePicker>
+      <div>
+        <button class="myButton">Resrver pour cette date</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, defineProps } from "vue";
+
+const props = defineProps({
+  modeAgenda: String,
+});
 
 const range = ref({
   start: new Date(),
   end: new Date(),
 });
-const mode = ref("dateTime");
+const mode = ref(props.modeAgenda ? props.modeAgenda : "dateTime");
 const rules = ref([
   {
     hours: [

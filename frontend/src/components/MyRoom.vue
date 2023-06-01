@@ -1,14 +1,26 @@
 <template>
   <div class="info container tc">
     <div>
-      <img src="../assets/Salle.jpg" />
+      <img
+        :src="require(`@/assets/Salle${id}.avif`)"
+        style="width: 314px; height: 200px"
+      />
     </div>
     <div>
       <div>
-        <p>Name : (nom de la salle)</p>
-        <p>Description : (Ma description)</p>
-        <p>capacity : (capacity)</p>
-        <p>Equipement : ([TV,Retro Projecteur])</p>
+        <p>Name : {{ name }}</p>
+        <p>Description : {{ description }}</p>
+        <p>capacity : {{ capacity }}</p>
+
+        <p v-if="equipements.length">
+          Equipement:
+          {{
+            equipements.map((e) => {
+              return e.name;
+            })
+          }}
+        </p>
+        <p v-else style="margin-bottom: 50px"></p>
       </div>
 
       <button class="myButton">Resrver Une Salle</button>
@@ -17,7 +29,20 @@
 </template>
 
 <script>
-export default {};
+export default {
+  name: "MyRoom",
+  props: ["id", "name", "description", "capacity", "equipements"],
+  data() {
+    return {
+      url: "./assets/Salle1.jpg",
+    };
+  },
+  methods: {
+    getPhoto() {
+      return "../src/assets/Salle1.jpg";
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -32,7 +57,7 @@ p {
   width: 314px;
   height: 440px;
   left: 66px;
-  top: 73px;
+  top: 50px;
   background: #ffffff;
 }
 .myButton {
