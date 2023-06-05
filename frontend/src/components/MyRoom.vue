@@ -2,20 +2,20 @@
   <div class="info container tc">
     <div>
       <img
-        :src="require(`@/assets/Salle${id}.avif`)"
+        :src="require(`@/assets/Salle${room.img}.avif`)"
         style="width: 314px; height: 200px"
       />
     </div>
     <div>
       <div>
-        <p>Name : {{ name }}</p>
-        <p>Description : {{ description }}</p>
-        <p>capacity : {{ capacity }}</p>
+        <p>Name : {{ room.name }}</p>
+        <p>Description : {{ room.description }}</p>
+        <p>capacity : {{ room.capacity }}</p>
 
-        <p v-if="equipements.length">
+        <p v-if="room.equipements.length">
           Equipement:
           {{
-            equipements.map((e) => {
+            room.equipements.map((e) => {
               return e.name;
             })
           }}
@@ -23,7 +23,9 @@
         <p v-else style="margin-bottom: 50px"></p>
       </div>
 
-      <button class="myButton">Resrver Une Salle</button>
+      <button class="myButton" @click="handleButtonClick">
+        Resrver Une Salle
+      </button>
     </div>
   </div>
 </template>
@@ -31,15 +33,11 @@
 <script>
 export default {
   name: "MyRoom",
-  props: ["id", "name", "description", "capacity", "equipements"],
-  data() {
-    return {
-      url: "./assets/Salle1.jpg",
-    };
-  },
+  props: ["room"],
+
   methods: {
-    getPhoto() {
-      return "../src/assets/Salle1.jpg";
+    handleButtonClick() {
+      this.$emit("button-click", this.room.id);
     },
   },
 };

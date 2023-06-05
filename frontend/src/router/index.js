@@ -15,9 +15,10 @@ const routes = [
     component: AboutView,
   },
   {
-    path: "/agenda",
+    path: "/agenda/:id",
     name: "agenda",
     component: MyAgenda,
+    props: true,
   },
   {
     path: "/room",
@@ -26,7 +27,7 @@ const routes = [
   },
   {
     path: "/",
-    redirect: "/connecter",
+    redirect: "/room",
   },
 ];
 

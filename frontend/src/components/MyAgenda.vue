@@ -1,170 +1,233 @@
 <template>
   <div>
     <DateModePicker v-model="mode" />
-    <VDatePicker
-      v-if="modeAgenda == 'date'"
-      :mode="mode"
-      :rules="rules"
-      :attributes="attributes"
-    >
+    <VDatePicker v-if="!id" :mode="mode" :attributes="attributes">
       <template #day-popover="{ dayTitle, attributes }">
-        <div class="px-2" style="padding: 20px 30px">
-          <div
-            class="text-xs text-gray-700 dark:text-gray-300 font-semibold text-center"
-          >
+        <div class="px-2 resrvationDiv" style="padding: 20px 30px">
+          <div class="tc black f4">
             {{ dayTitle }}
           </div>
           <ul>
             <li
-              v-for="{ key, customData } in attributes"
+              v-for="{
+                key,
+                customData,
+                startDateDay,
+                startDateMonth,
+                startDateYear,
+                startDateHours,
+                startDateMinutes,
+                endDateDay,
+                endDateMonth,
+                endDateYear,
+                endDateHours,
+                endDateMinutes,
+              } in attributes"
               :key="key"
-              class="block text-xs text-gray-700 dark:text-gray-300 bg-red-100"
-              style="margin-bottom: 20px"
+              class="block black"
+              style="margin-bottom: 20px; text-align: left"
             >
-              {{ customData.description }}
-              <span class="gg-trash" style="display: inline-block" />
+              la salle {{ customData.name }} est réservée le
+              {{ startDateDay }}/{{ startDateMonth }}/{{ startDateYear }} à
+              {{ startDateHours }} h {{ startDateMinutes }} jusqu'au
+              {{ endDateDay }}/{{ endDateMonth }}/{{ endDateYear }} à
+              {{ endDateHours }} h {{ endDateMinutes }}.
+              <!-- <span class="gg-trash" style="display: inline-block" /> -->
             </li>
           </ul>
         </div>
       </template>
     </VDatePicker>
-    <div v-else style="margin-top: 190px">
+    <div v-else style="margin-top: 130px">
+      <div style="margin-bottom: 45px">
+        <span
+          v-if="rooms.length"
+          class="white ba b--white bg-transparent f3"
+          style="padding: 10px 30px"
+          >Salle : {{ rooms[0].name }}</span
+        >
+      </div>
       <VDatePicker
         v-model.range="range"
         :mode="mode"
-        :rules="rules"
         :attributes="attributes"
+        hide-time-header
       >
         <template #day-popover="{ dayTitle, attributes }">
-          <div class="px-2" style="padding: 20px 30px">
-            <div
-              class="text-xs text-gray-700 dark:text-gray-300 font-semibold text-center"
-            >
+          <div class="px-2 resrvationDiv" style="padding: 20px 30px">
+            <div class="tc black f4">
               {{ dayTitle }}
             </div>
             <ul>
               <li
-                v-for="{ key, customData } in attributes"
+                v-for="{
+                  key,
+                  customData,
+                  startDateDay,
+                  startDateMonth,
+                  startDateYear,
+                  startDateHours,
+                  startDateMinutes,
+                  endDateDay,
+                  endDateMonth,
+                  endDateYear,
+                  endDateHours,
+                  endDateMinutes,
+                } in attributes"
                 :key="key"
-                class="block text-xs text-gray-700 dark:text-gray-300 bg-red-100"
-                style="margin-bottom: 20px"
+                class="block black"
+                style="margin-bottom: 20px; text-align: left"
               >
-                {{ customData.description }}
-                <span class="gg-trash" style="display: inline-block" />
+                la salle {{ customData.name }} est réservée le
+                {{ startDateDay }}/{{ startDateMonth }}/{{ startDateYear }} à
+                {{ startDateHours }} h {{ startDateMinutes }} jusqu'au
+                {{ endDateDay }}/{{ endDateMonth }}/{{ endDateYear }} à
+                {{ endDateHours }} h {{ endDateMinutes }}.
+                <!-- <span class="gg-trash" style="display: inline-block" /> -->
               </li>
             </ul>
           </div>
         </template>
       </VDatePicker>
-      <div>
-        <button class="myButton">Resrver pour cette date</button>
+      <div v-if="rooms.length">
+        <div style="color: white; margin-top: 15px">{{ range }}</div>
+        <button class="myButton" @click="addReservation(rooms[0].id)">
+          Resrver pour cette date
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, defineProps } from "vue";
-
+import { ref, defineProps, onMounted, watch } from "vue";
 const props = defineProps({
-  modeAgenda: String,
+  id: String,
 });
-
+const rooms = ref([]);
 const range = ref({
   start: new Date(),
   end: new Date(),
 });
-const mode = ref(props.modeAgenda ? props.modeAgenda : "dateTime");
-const rules = ref([
-  {
-    hours: [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-      22, 23,
-    ],
-    minutes: [
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-      39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
-      57, 58, 59,
-    ],
-    seconds: [
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-      39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
-      57, 58, 59,
-    ],
-    milliseconds: 0,
-  },
-  {
-    hours: [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-      22, 23,
-    ],
-    minutes: [
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-      39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
-      57, 58, 59,
-    ],
-    seconds: [
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-      39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
-      57, 58, 59,
-    ],
-    milliseconds: 999,
-  },
-]);
+const mode = ref(props.id ? "dateTime" : "date");
+const post = ref(false);
+onMounted(async () => {
+  console.log("TestMounted");
+  if (!props.id) {
+    await fetch("http://localhost:3000/rooms")
+      .then((res) => res.json())
+      .then((data) => (rooms.value = data))
+      .catch((err) => console.log(err.message));
+  } else {
+    await fetch(`http://localhost:3000/rooms/${props.id}`)
+      .then((res) => res.json())
+      .then((data) => (rooms.value = [data]))
+      .catch((err) => console.log(err.message));
+  }
+  console.log("Test", rooms.value);
 
-const todos = ref([
-  {
-    description: "Salle réservée de [heure de début] jusqu'à [heure de fin].",
-    isComplete: false,
-    dates: [
-      new Date(2023, 4, 4),
-      new Date(2023, 4, 10),
-      new Date(2023, 4, 15),
-      new Date(2023, 5, 10),
-    ],
-    color: "red",
-  },
-  {
-    description: "Salle réservée de [heure de début] jusqu'à [heure de fin].",
-    isComplete: false,
-    dates: [
-      new Date(2023, 4, 4),
-      new Date(2023, 4, 10),
-      new Date(2023, 5, 15),
-      new Date(2023, 5, 10),
-    ],
-    color: "green",
-  },
-  {
-    description: "Salle réservée de [heure de début] jusqu'à [heure de fin].",
-    isComplete: false,
-    dates: [
-      new Date(2023, 4, 4),
-      new Date(2023, 4, 10),
-      new Date(2023, 4, 15),
-      new Date(2023, 5, 10),
-    ],
-    color: "black",
-  },
-]);
+  attributes.value = Data();
+});
 
-const attributes = computed(() => [
-  // Attributqes for todos
-  ...todos.value.map((todo) => ({
-    dates: todo.dates,
-    dot: {
-      color: todo.color,
-      class: todo.isComplete ? "opacity-75" : "",
+watch(post, async (newValue) => {
+  if (props.id) {
+    // Handle the change
+    console.log("testmyData changed:", newValue);
+    await fetch(`http://localhost:3000/rooms/${props.id}`)
+      .then((res) => res.json())
+      .then((data) => (rooms.value = [data]))
+      .catch((err) => console.log(err.message));
+    console.log("Test", rooms.value);
+
+    attributes.value = Data();
+  }
+});
+
+const getAllDatesBetweenTwoDates = (startDate, endDate, id) => {
+  const dates = [];
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    dates.push({
+      date: currentDate.toISOString().split("T")[0],
+      id: id,
+      startDate,
+      endDate,
+    });
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dates;
+};
+
+const allMyDate = (tab) => {
+  let myTab = [];
+  tab.forEach((e) => {
+    myTab.push(
+      ...getAllDatesBetweenTwoDates(new Date(e.start), new Date(e.end), e.id)
+    );
+  });
+
+  return myTab;
+};
+
+const Data = () => {
+  let tab = [];
+  console.log("Test2", rooms.value);
+  rooms.value.forEach((room) => {
+    allMyDate(room.date).forEach((date) => {
+      tab.push({
+        dates: date.date,
+        startDateDay: new Date(date.startDate).getDate(),
+        startDateMonth: new Date(date.startDate).getMonth() + 1,
+        startDateYear: new Date(date.startDate).getFullYear(),
+        startDateHours: new Date(date.startDate).getHours(),
+        startDateMinutes: new Date(date.startDate).getMinutes(),
+        endDateDay: new Date(date.endDate).getDate(),
+        endDateMonth: new Date(date.endDate).getMonth() + 1,
+        endDateYear: new Date(date.endDate).getFullYear(),
+        endDateHours: new Date(date.endDate).getHours(),
+        endDateMinutes: new Date(date.endDate).getMinutes(),
+        colorBg: room.color,
+        dot: {
+          color: room.color,
+          class: "",
+        },
+        popover: true,
+        customData: room,
+      });
+    });
+  });
+  return tab;
+};
+
+const addReservation = (id) => {
+  fetch("http://localhost:3000/date", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      roomId: id,
+      start: range.value.start,
+      end: range.value.end,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data._id) {
+        post.value = true;
+        alert("Reservation bien enregistrer");
+      } else {
+        alert("Erreur");
+      }
+    })
+    .catch(() => {
+      alert("Erreur");
+    });
+};
 
-    popover: true,
-    customData: todo,
-  })),
-]);
+let attributes = ref(Data());
 </script>
 
 <style scoped>
@@ -216,7 +279,7 @@ const attributes = computed(() => [
   border: 1px solid white;
   border-radius: 20px;
   padding: 11px;
-  margin-top: 30px;
+  margin-top: 15px;
   cursor: pointer;
 }
 .myButton:hover {
@@ -228,5 +291,9 @@ const attributes = computed(() => [
   color: white;
   box-shadow: 0 1px white;
   transform: translateY(2px);
+}
+
+.resrvationDiv {
+  background: white;
 }
 </style>
