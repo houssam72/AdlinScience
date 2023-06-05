@@ -3,6 +3,8 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 
 const userRouter = require("./api/routes/user");
+const roomRouter = require("./api/routes/room");
+const dateRouter = require("./api/routes/date");
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.use((req, res, next) => {
 /////////////////////////////////////
 
 app.use("/user", userRouter);
+app.use("/rooms", roomRouter);
+app.use("/date", dateRouter);
 
 app.get("/", (req, res, next) => {
   res.status(200).json({
