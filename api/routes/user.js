@@ -9,6 +9,6 @@ router.post("/signUp", user_Signup);
 
 router.post("/login", user_Login);
 
-router.delete("/:userId", checkAuth, user_Delete);
+router.delete("/:userId", checkAuth.checkAuth, user_Delete);
 
 module.exports = router;

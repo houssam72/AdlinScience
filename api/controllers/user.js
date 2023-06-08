@@ -87,18 +87,20 @@ exports.user_Delete = (req, res, next) => {
   User.find({ _id: req.params.userId })
     .exec()
     .then(async (user) => {
-      if (user[0].email == req.userData.email) {
+      if (user[0]._id.toString() == req.userData.userId) {
         await User.deleteOne({ _id: req.params.userId })
           .exec()
           .then((result) => {
             console.log(result);
             if (result.deletedCount) {
               return res.status(200).json({ message: "user deleted" });
+            } else {
+              return res.status(500).json({ message: "Failed" });
             }
-            return res.status(500).json({ message: "Failed" });
           });
+      } else {
+        return res.status(500).json({ message: "You can't delete" });
       }
-      return res.status(500).json({ message: "You can't delete" });
     })
     .catch((err) => {
       res.status(500).json({ err: err });

@@ -29,6 +29,7 @@ exports.create_date = async (req, res, next) => {
     const date = new Date({
       _id: new mongoose.Types.ObjectId(),
       roomId: req.body.roomId,
+      userId: req.userData.userId,
       start: req.body.start,
       end: req.body.end,
     });
@@ -58,4 +59,27 @@ exports.create_date = async (req, res, next) => {
         });
       });
   }
+};
+
+exports.delete_date = (req, res, next) => {
+  Date.find({ _id: req.params.dateId })
+    .exec()
+    .then(async (date) => {
+      if (date[0].userId.toString() == req.userData.userId) {
+        await Date.deleteOne({ _id: req.params.dateId })
+          .exec()
+          .then((result) => {
+            if (result.deletedCount) {
+              return res.status(200).json({ message: "date deleted" });
+            } else {
+              return res.status(500).json({ message: "Failed" });
+            }
+          });
+      } else {
+        return res.status(500).json({ message: "You can't delete" });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({ err: err });
+    });
 };

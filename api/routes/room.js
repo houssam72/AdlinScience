@@ -1,5 +1,7 @@
 const express = require("express");
 
+const checkAuth = require("../middleware/check-auth");
+
 const {
   create_room,
   get_rooms,
@@ -8,8 +10,8 @@ const {
 
 const router = express.Router();
 
-router.get("/", get_rooms);
-router.post("/", create_room);
-router.get("/:roomId", get_room_by_id);
+router.get("/", checkAuth.checkAuthEhitNextForAllTimes, get_rooms);
+router.post("/", checkAuth.checkAuth, create_room);
+router.get("/:roomId", checkAuth.checkAuthEhitNextForAllTimes, get_room_by_id);
 
 module.exports = router;

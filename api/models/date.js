@@ -4,9 +4,11 @@ const dateSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
   roomId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Room",
     required: true,
+    ref: "Room",
   },
+  isAdmin: { type: Boolean, default: false },
+  userId: { type: mongoose.Schema.Types.ObjectId, require: true, ref: "User" },
   start: { type: String, required: true },
   end: { type: String, required: true },
 });

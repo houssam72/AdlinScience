@@ -1,6 +1,17 @@
 const mongoose = require("mongoose");
 const Room = require("../models/room");
 
+const AddIsAdminToDates = (dates, userId) => {
+  return dates.map((date) => {
+    if (date.userId == userId) {
+      date.isAdmin = true;
+    } else {
+      date.isAdmin = false;
+    }
+    return date;
+  });
+};
+
 exports.create_room = (req, res, next) => {
   const room = new Room({
     _id: new mongoose.Types.ObjectId(),
@@ -46,7 +57,7 @@ exports.get_rooms = (req, res, next) => {
             equipements: doc.equipements,
             createdAt: doc.createdAt,
             updatedAt: doc.updatedAt,
-            date: doc.dates,
+            date: AddIsAdminToDates(doc.dates, req.userData.userId),
             color: doc.color,
             img: doc.img,
           };
@@ -74,7 +85,7 @@ exports.get_room_by_id = (req, res, next) => {
           description: doc.description,
           capacity: doc.capacity,
           equipements: doc.equipements,
-          date: doc.dates,
+          date: AddIsAdminToDates(doc.dates, req.userData.userId),
           createdAt: doc.createdAt,
           updatedAt: doc.updatedAt,
           color: doc.color,
