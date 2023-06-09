@@ -20,6 +20,7 @@
               type="email"
               name="email-address"
               id="email-address"
+              v-model="Email"
             />
           </div>
           <div className="mv3">
@@ -31,6 +32,7 @@
               type="password"
               name="password"
               id="password"
+              v-model="Password"
             />
           </div>
         </fieldset>
@@ -43,13 +45,22 @@
             :value="
               $route.name == 'connecter' ? 'Je me connecte' : 'S’inscrire'
             "
+            @click="loginOrSignUp"
           />
           <!-- {/* </Link> */} -->
         </div>
         <!-- {/* <Link to='register'> */} -->
 
         <div className="lh-copy mt3" v-if="$route.name == 'connecter'">
-          <p className="tc f6 link dim white db pointer" path="/services">
+          <p
+            className="tc f6 link dim white db pointer"
+            path="/inscrire"
+            @click="
+              () => {
+                $router.push({ name: 'inscrire' });
+              }
+            "
+          >
             S’inscrire
           </p>
         </div>
@@ -63,6 +74,74 @@
 <script>
 export default {
   name: "signinRegister",
+  data() {
+    return {
+      Email: "",
+      Password: "",
+    };
+  },
+  methods: {
+    loginOrSignUp() {
+      // Handle the click event here
+      if (this.$route.name == "connecter") {
+        console.log("Se connecter Button clicked!");
+        fetch("http://localhost:3000/user/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: this.Email,
+            password: this.Password,
+          }),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            // Handle the response from the server
+            if (result.token) {
+              localStorage.setItem("token", result.token);
+              this.$router.push({ name: "room" });
+            } else {
+              alert("Server Error");
+            }
+            console.log("Response:", result);
+          })
+          .catch((error) => {
+            // Handle any errors that occurred during the request
+            alert("Server Error");
+            console.error("Error:", error);
+          });
+      } else if (this.$route.name == "inscrire") {
+        fetch("http://localhost:3000/user/signUp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: this.Email,
+            password: this.Password,
+          }),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            if (result.message == "user created") {
+              this.$router.push({ name: "connecter" });
+            } else if (result.message == "Mail exists") {
+              alert(result.message);
+            } else {
+              alert("Error Server1");
+            }
+            // Handle the response from the server
+            console.log("Response:", result);
+          })
+          .catch((error) => {
+            // Handle any errors that occurred during the request
+            alert("Server Error2");
+            console.error("Error:", error);
+          });
+      }
+    },
+  },
 };
 </script>
 

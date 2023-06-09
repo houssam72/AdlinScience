@@ -11,6 +11,8 @@
             <li
               v-for="{
                 key,
+                isAdmin,
+                dateId,
                 customData,
                 startDateDay,
                 startDateMonth,
@@ -32,7 +34,12 @@
               {{ startDateHours }} h {{ startDateMinutes }} jusqu'au
               {{ endDateDay }}/{{ endDateMonth }}/{{ endDateYear }} à
               {{ endDateHours }} h {{ endDateMinutes }}.
-              <!-- <span class="gg-trash" style="display: inline-block" /> -->
+              <span
+                v-if="isAdmin"
+                class="gg-trash"
+                style="display: inline-block"
+                @click="deleteDate(dateId)"
+              />
             </li>
           </ul>
         </div>
@@ -62,6 +69,8 @@
               <li
                 v-for="{
                   key,
+                  isAdmin,
+                  dateId,
                   customData,
                   startDateDay,
                   startDateMonth,
@@ -83,7 +92,12 @@
                 {{ startDateHours }} h {{ startDateMinutes }} jusqu'au
                 {{ endDateDay }}/{{ endDateMonth }}/{{ endDateYear }} à
                 {{ endDateHours }} h {{ endDateMinutes }}.
-                <!-- <span class="gg-trash" style="display: inline-block" /> -->
+                <span
+                  v-if="isAdmin"
+                  class="gg-trash"
+                  style="display: inline-block"
+                  @click="deleteDate(dateId)"
+                />
               </li>
             </ul>
           </div>
@@ -91,7 +105,11 @@
       </VDatePicker>
       <div v-if="rooms.length">
         <div style="color: white; margin-top: 15px">{{ range }}</div>
-        <button class="myButton" @click="addReservation(rooms[0].id)">
+        <button
+          v-if="token"
+          class="myButton"
+          @click="addReservation(rooms[0].id)"
+        >
           Resrver pour cette date
         </button>
       </div>
@@ -101,6 +119,7 @@
 
 <script setup>
 import { ref, defineProps, onMounted, watch } from "vue";
+const token = ref(localStorage.getItem("token"));
 const props = defineProps({
   id: String,
 });
@@ -114,12 +133,20 @@ const post = ref(false);
 onMounted(async () => {
   console.log("TestMounted");
   if (!props.id) {
-    await fetch("http://localhost:3000/rooms")
+    await fetch("http://localhost:3000/rooms", {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => (rooms.value = data))
       .catch((err) => console.log(err.message));
   } else {
-    await fetch(`http://localhost:3000/rooms/${props.id}`)
+    await fetch(`http://localhost:3000/rooms/${props.id}`, {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => (rooms.value = [data]))
       .catch((err) => console.log(err.message));
@@ -133,24 +160,40 @@ watch(post, async (newValue) => {
   if (props.id) {
     // Handle the change
     console.log("testmyData changed:", newValue);
-    await fetch(`http://localhost:3000/rooms/${props.id}`)
+    await fetch(`http://localhost:3000/rooms/${props.id}`, {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => (rooms.value = [data]))
       .catch((err) => console.log(err.message));
     console.log("Test", rooms.value);
 
     attributes.value = Data();
+  } else {
+    await fetch("http://localhost:3000/rooms", {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => (rooms.value = data))
+      .catch((err) => console.log(err.message));
+
+    attributes.value = Data();
   }
 });
 
-const getAllDatesBetweenTwoDates = (startDate, endDate, id) => {
+const getAllDatesBetweenTwoDates = (startDate, endDate, id, isAdmin) => {
   const dates = [];
   let currentDate = new Date(startDate);
 
   while (currentDate <= endDate) {
     dates.push({
       date: currentDate.toISOString().split("T")[0],
-      id: id,
+      _id: id,
+      isAdmin: isAdmin,
       startDate,
       endDate,
     });
@@ -164,7 +207,12 @@ const allMyDate = (tab) => {
   let myTab = [];
   tab.forEach((e) => {
     myTab.push(
-      ...getAllDatesBetweenTwoDates(new Date(e.start), new Date(e.end), e.id)
+      ...getAllDatesBetweenTwoDates(
+        new Date(e.start),
+        new Date(e.end),
+        e._id,
+        e.isAdmin
+      )
     );
   });
 
@@ -177,6 +225,8 @@ const Data = () => {
   rooms.value.forEach((room) => {
     allMyDate(room.date).forEach((date) => {
       tab.push({
+        isAdmin: date.isAdmin,
+        dateId: date._id,
         dates: date.date,
         startDateDay: new Date(date.startDate).getDate(),
         startDateMonth: new Date(date.startDate).getMonth() + 1,
@@ -206,6 +256,7 @@ const addReservation = (id) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token.value}`,
     },
     body: JSON.stringify({
       roomId: id,
@@ -216,8 +267,29 @@ const addReservation = (id) => {
     .then((response) => response.json())
     .then((data) => {
       if (data._id) {
-        post.value = true;
+        post.value = !post.value;
         alert("Reservation bien enregistrer");
+      } else {
+        alert("Erreur");
+      }
+    })
+    .catch(() => {
+      alert("Erreur");
+    });
+};
+
+const deleteDate = (id) => {
+  fetch(`http://localhost:3000/date/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token.value}`,
+    },
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      if (response.message == "date deleted") {
+        post.value = !post.value;
+        alert("Reservation supprimer");
       } else {
         alert("Erreur");
       }
@@ -244,6 +316,7 @@ let attributes = ref(Data());
   border-bottom-left-radius: 1px;
   border-bottom-right-radius: 1px;
   margin-left: 5px;
+  cursor: pointer;
 }
 
 .gg-trash::after,
