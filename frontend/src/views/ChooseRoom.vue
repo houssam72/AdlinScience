@@ -1,6 +1,11 @@
 <template>
   <div>
-    <div style="margin-top: 40px">
+    <div v-if="token" style="text-align: right">
+      <!-- {/* <Link to='/Acceuil'> */} -->
+      <button class="myButton" @click="logOut()">se deconnecter</button>
+      <!-- {/* </Link> */} -->
+    </div>
+    <div style="margin-top: 30px">
       <input
         class="inputSearch"
         style="margin-right: 100px"
@@ -21,7 +26,7 @@
           <MyRoom :room="room" @button-click="handleButtonClick" />
         </div>
       </div>
-      <div style="margin-top: 100px">
+      <div style="margin-top: 80px">
         <MyAgenda modeAgenda="date" />
       </div>
     </div>
@@ -45,6 +50,7 @@ export default {
       filterRoomsByCapacite: [],
       CapacityValue: "",
       EquipementValue: "",
+      token: localStorage.getItem("token"),
     };
   },
   watch: {
@@ -118,6 +124,11 @@ export default {
         );
       }
     },
+    logOut() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("exp");
+      this.$router.push({ name: "connecter" });
+    },
   },
 };
 </script>
@@ -131,5 +142,26 @@ export default {
   border-radius: 20px;
   width: 295px;
   height: 30px;
+}
+
+.myButton {
+  margin-top: 15px;
+  margin-right: 30px;
+  background-color: black;
+  color: white;
+  border: 1px solid white;
+  /* border-radius: 20px; */
+  padding: 14px;
+  cursor: pointer;
+}
+.myButton:hover {
+  background-color: white;
+  color: black;
+}
+.myButton:active {
+  background-color: black;
+  color: white;
+  box-shadow: 0 1px white;
+  transform: translateY(2px);
 }
 </style>

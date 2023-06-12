@@ -100,6 +100,7 @@ export default {
             // Handle the response from the server
             if (result.token) {
               localStorage.setItem("token", result.token);
+              localStorage.setItem("exp", result.exp);
               this.$router.push({ name: "room" });
             } else {
               alert("Server Error");
