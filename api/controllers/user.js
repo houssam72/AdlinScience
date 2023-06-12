@@ -62,12 +62,15 @@ exports.user_Login = (req, res, next) => {
               },
               process.env.JWT_KEY,
               {
-                expiresIn: "1h",
+                expiresIn: "30d",
               }
             );
-            return res
-              .status(200)
-              .json({ message: "Auth successful", token: token });
+            const exp = jwt.verify(token, process.env.JWT_KEY).exp;
+            return res.status(200).json({
+              message: "Auth successful",
+              token: token,
+              exp: exp,
+            });
           }
           console.log(user[0].password);
           res.status(404).json({
