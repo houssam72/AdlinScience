@@ -185,6 +185,26 @@ watch(post, async (newValue) => {
   }
 });
 
+const isDateBetween = (targetDate, startDate, endDate) => {
+  const targetTime = new Date(targetDate).getTime();
+  const startTime = new Date(startDate).getTime();
+  const endTime = new Date(endDate).getTime();
+
+  return targetTime >= startTime && targetTime <= endTime;
+};
+
+const areDatesBetween = (startDate, endDate, date1, date2) => {
+  const startTime = new Date(startDate).getTime();
+  const endTime = new Date(endDate).getTime();
+  const time1 = new Date(date1).getTime();
+  const time2 = new Date(date2).getTime();
+
+  const isDate1InRange = time1 >= startTime && time1 <= endTime;
+  const isDate2InRange = time2 >= startTime && time2 <= endTime;
+
+  return isDate1InRange && isDate2InRange;
+};
+
 const getAllDatesBetweenTwoDates = (startDate, endDate, id, isAdmin) => {
   const dates = [];
   let currentDate = new Date(startDate);
@@ -252,30 +272,48 @@ const Data = () => {
 };
 
 const addReservation = (id) => {
-  fetch("http://localhost:3000/date", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token.value}`,
-    },
-    body: JSON.stringify({
-      roomId: id,
-      start: range.value.start,
-      end: range.value.end,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data._id) {
-        post.value = !post.value;
-        alert("Reservation bien enregistrer");
-      } else {
-        alert("Erreur");
-      }
+  let salleReserve = false;
+
+  rooms.value[0].date?.forEach((dt) => {
+    if (
+      isDateBetween(range.value.start, dt.start, dt.end) ||
+      isDateBetween(range.value.end, dt.start, dt.end) ||
+      areDatesBetween(range.value.start, range.value.end, dt.start, dt.end)
+    ) {
+      salleReserve = true;
+    }
+  });
+
+  if (salleReserve) {
+    alert(
+      "Cette salle est déjà réservée pour ce créneau. Veuillez choisir un autre créneau."
+    );
+  } else {
+    fetch("http://localhost:3000/date", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token.value}`,
+      },
+      body: JSON.stringify({
+        roomId: id,
+        start: range.value.start,
+        end: range.value.end,
+      }),
     })
-    .catch(() => {
-      alert("Erreur");
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        if (data._id) {
+          post.value = !post.value;
+          alert("Reservation bien enregistrer");
+        } else {
+          alert("Erreur");
+        }
+      })
+      .catch(() => {
+        alert("Erreur");
+      });
+  }
 };
 
 const deleteDate = (id) => {
